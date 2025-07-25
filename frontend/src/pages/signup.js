@@ -1,31 +1,37 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { ToastContainer } from "react-toastify";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./page.css";
 import { handleerror, handlesuccess } from "../utils";
-import { useNavigate } from "react-router-dom";
-function Signup() {
+
+
+function Signup({ setIsAuthenticated }) {
   const navigate = useNavigate();
   const [signinfo, setsigninfo] = useState({
     name: "",
     email: "",
     password: "",
   });
+
   useEffect(() => {
-    console.log(signinfo);
+    console.log("Signup Info Updated:", signinfo);
   }, [signinfo]);
-  const info = (e) => {
+
+  const handleInput = (e) => {
     const { name, value } = e.target;
-    setsigninfo({ ...signinfo, [name]: value });
+    setsigninfo((prev) => ({ ...prev, [name]: value }));
   };
-  const sub = async (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const { name, email, password } = signinfo;
+
     if (!name || !email || !password) {
-      return handleerror("All fields are required");
+      return handleerror("All fields are required ⚠️");
     }
+
     const url = "http://localhost:8080/auth/signup";
+
     try {
       const response = await fetch(url, {
         method: "POST",
@@ -34,63 +40,75 @@ function Signup() {
       });
 
       const result = await response.json();
-      const {success, message,error} = result;
+      const { success, jwtToken,message, error } = result;
+
       if (success) {
+        if (jwtToken) {
+        localStorage.setItem("token", jwtToken);
+      }
+        handlesuccess("Signup successful 🎉");
+        setIsAuthenticated(true);
         setTimeout(() => {
           navigate("/final");
-        } , 1000);
+        }, 1000);
+      } else {
+        handleerror(error || message || "Signup failed 😵‍💫");
       }
-      else if(error){
-        return handleerror(error);
-      }
-      else if(!success){ 
-        return handleerror(message);
-      }
-    } catch (error) {
-      handleerror(error);
+    } catch (err) {
+      console.error("Signup Error:", err);
+      handleerror("Something went wrong. Try again later 🚨");
     }
-    return handlesuccess("Signup successful");
   };
+
   return (
     <div className="container">
-      <form className="form" onSubmit={sub}>
-        <h2 className="page">SignUp</h2>
+      <form className="form" onSubmit={handleSubmit}>
+        <h2 className="page">✍️ Sign Up</h2>
+
         <div className="details">
           <label htmlFor="name">Username</label>
           <input
             type="text"
             id="name"
-            placeholder="name"
-            onChange={info}
             name="name"
+            placeholder="e.g. star_coder"
+            value={signinfo.name}
+            onChange={handleInput}
+            autoFocus
           />
         </div>
+
         <div className="details">
           <label htmlFor="email">Email</label>
           <input
-            type="text"
+            type="email"
             id="email"
-            placeholder="email"
-            onChange={info}
             name="email"
+            placeholder="you@example.com"
+            value={signinfo.email}
+            onChange={handleInput}
           />
         </div>
+
         <div className="details">
           <label htmlFor="password">Password</label>
           <input
             type="password"
             id="password"
-            placeholder="password"
-            onChange={info}
             name="password"
+            placeholder="••••••••"
+            value={signinfo.password}
+            onChange={handleInput}
           />
         </div>
 
-        <button type="submit">SignUp</button>
-        <span>
+        <button type="submit">🚀 Sign Up</button>
+
+        <span style={{ marginTop: '10px' }}>
           Already have an account? <Link to="/login">Login</Link>
         </span>
       </form>
+
       <ToastContainer />
     </div>
   );

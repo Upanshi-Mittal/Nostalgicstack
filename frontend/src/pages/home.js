@@ -13,7 +13,6 @@ function Home() {
                     </button>
                 </Link>
             
-            
                 <Link to="/login">
                     <button className="login" style={{ color: "white" }}>
                         Login

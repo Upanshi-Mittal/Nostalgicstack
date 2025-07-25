@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const usermodel = require("../MOdels/user");
+const {usermodel} = require("../Models/user");
 require("dotenv").config();
 
 
@@ -10,16 +10,22 @@ const signup = async (req, res) => {
         const { name, email, password } = req.body;
         const user = await usermodel.findOne({ email });
         if (user) {
-            return res.status(409).json({ message: "User is already exist", success: false })
+            return res.status(409).json({ message: "User already exist", success: false })
         }
         const userm = new usermodel({ name, email, password });
         userm.password = await bcrypt.hash(password, 10);
 
         await userm.save();
+        const jwtToken = jwt.sign(
+            { email: userm.email, _id: userm._id },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        )
         res.status(201).json(
             {
                 message: "Signup successfully",
-                success: true
+                success: true,
+                jwtToken
             }
         )
     }
@@ -34,12 +40,11 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
     console.log(req.body);
     try {
-        const { email, password } = req.body;
+        const {email, password } = req.body;
         const user = await usermodel.findOne({ email });
         if (!user) {
             return res.status(409).json({ message: "auth failed", success: false })
         }
-
         const isPassEqual = await bcrypt.compare(password, user.password);
         if (!isPassEqual) {
             return res.status(409).json({ message: "auth failed", success: false })
@@ -57,7 +62,8 @@ const login = async (req, res) => {
                 jwtToken,
                 email,
                 password,
-                name:user.name
+                name:user.name,
+                
                 
             }
         )

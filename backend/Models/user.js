@@ -15,6 +15,11 @@ const userschema=new mongoose.Schema({
     }
 })
 
+const blogSchema=new mongoose.Schema({
+    date:Date,
+    title:String,
+    content:String  
+})
 const usermodel=mongoose.model('user',userschema)
-
-module.exports=usermodel;
+const blogmodel=mongoose.model('blog',blogSchema)
+module.exports={usermodel,blogmodel};

@@ -3,84 +3,93 @@ import { handleerror, handlesuccess } from '../utils';
 import { Link, useNavigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 
-function Login() {
-  const navigate=useNavigate();
+function Login({ setIsAuthenticated }) {
+  const navigate = useNavigate();
   const [loginfo, setloginfo] = useState({
     email: '',
     password: '',
   });
 
-  function info(e) {
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setloginfo({ ...loginfo, [name]: value });
-  }
+    setloginfo((prev) => ({ ...prev, [name]: value }));
+  };
 
   useEffect(() => {
-    console.log('Updated loginfo:', loginfo);
-  }, [loginfo]);
+    console.log('loginfo updated:', loginfo);
+  }, [loginfo]); // Now actually runs when loginfo updates
 
-  const sub =async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const { email, password } = loginfo;
+
     if (!email || !password) {
-      return handleerror('All fields are required');
+      return handleerror('All fields are required ⚠️');
     }
-    const url="http://localhost:8080/auth/login";
-    try{
-      const response=await fetch(url,{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify(loginfo)
+
+    const url = "http://localhost:8080/auth/login";
+
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(loginfo),
       });
 
-      const result=await response.json();
-      const {success,message,jwtToken,name}=result;
-      if(!success){
-        return handleerror(message);
-      }
-      else{
-        handlesuccess('you have logged in successfully');
-        localStorage.setItem('token',jwtToken);
-        localStorage.setItem('name',name);
-        setTimeout(() => {
-          navigate('/final');
-        },1000);
-      }
-    }
-    catch (error) {
-      handleerror(error||'Something went wrong!');
-      console.log(error);
-    }
+      const result = await response.json();
+      const { success, message, jwtToken, name } = result;
 
+      if (!success) {
+        return handleerror(message || 'Login failed 😵');
+      }
+
+      handlesuccess('Logged in successfully 🚀');
+      localStorage.setItem('token', jwtToken);
+      localStorage.setItem('name', name);
+      setIsAuthenticated(true);
+
+      setTimeout(() => {
+        navigate('/final');
+      }, 1000);
+    } catch (error) {
+      handleerror('Something went wrong 💀');
+      console.error('Login error:', error);
+    }
   };
 
   return (
     <div className="container">
-      <form className="form" onSubmit={sub}>
-        <h2 className="page">Login</h2>
+      <form className="form" onSubmit={handleSubmit}>
+        <h2 className="page">🔐 Login</h2>
+
         <div className="details">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">📧 Email</label>
           <input
-            type="text"
+            type="email"
             id="email"
-            placeholder="email"
-            onChange={info}
             name="email"
+            placeholder="you@example.com"
+            value={loginfo.email}
+            onChange={handleInputChange}
           />
         </div>
+
         <div className="details">
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">🔑 Password</label>
           <input
             type="password"
             id="password"
-            placeholder="password"
-            onChange={info}
             name="password"
+            placeholder="•••••••"
+            value={loginfo.password}
+            onChange={handleInputChange}
           />
         </div>
-        <button type="submit">Login</button>
-        <span>Don't have an account?
-          <Link to="/signup">Sign up</Link>
+
+        <button type="submit" style={{ marginTop: '10px' }}>✨ Login</button>
+
+        <span style={{ display: 'block', marginTop: '12px' }}>
+          Don’t have an account? <Link to="/signup">Sign up</Link>
         </span>
       </form>
 
