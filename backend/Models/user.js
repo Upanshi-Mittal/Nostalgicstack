@@ -12,13 +12,24 @@ const userschema=new mongoose.Schema({
 
     password:{type:String ,
         required:true
-    }
+    },
+    favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Blog' }],
 })
 
 const blogSchema=new mongoose.Schema({
-    date:Date,
+    
     title:String,
-    content:String  
+    content:String,
+    authorUsername: String,
+    likes: { type: Number, default: 0 },
+    likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    comments: [
+        {
+            user: { type: mongoose.Schema.Types.ObjectId, ref: 'user' },
+            text: String,
+            date: { type: Date, default: Date.now }
+        }
+    ]
 })
 const usermodel=mongoose.model('user',userschema)
 const blogmodel=mongoose.model('blog',blogSchema)
