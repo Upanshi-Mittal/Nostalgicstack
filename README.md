@@ -55,16 +55,16 @@ Think Medium meets Notion — but with your personal touch.
   - Clean layout with smooth transitions
 
 ---
-# 1. Clone the repo
+** 1. Clone the repo**
 git clone https://github.com/yourusername/InkHive.git
 cd InkHive
 
-# 2. Install dependencies
+** 2. Install dependencies**
 npm install
 
-# 3. Setup MongoDB URI in .env
+** 3. Setup MongoDB URI in .env**
 MONGO_URI=your_mongo_connection_string
 JWT_SECRET=your_jwt_secret
 
-# 4. Start the server
+** Start the server**
 npm start
